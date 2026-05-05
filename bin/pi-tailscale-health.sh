@@ -4,6 +4,7 @@ set -euo pipefail
 CONF="/etc/pi-tailscale-role/pi-tailscale.conf"
 LOG_TAG="pi-tailscale-health"
 FAIL_FILE="/run/pi-tailscale-health.failures"
+ALERT_STAMP_FILE="/run/pi-tailscale-health.last-email-alert"
 
 log() {
     logger -t "$LOG_TAG" "$*"
@@ -18,17 +19,21 @@ fi
 PI_TS_RESTART_ON_HEALTH_FAIL="${PI_TS_RESTART_ON_HEALTH_FAIL:-true}"
 PI_TS_REBOOT_ON_REPEATED_FAILURE="${PI_TS_REBOOT_ON_REPEATED_FAILURE:-false}"
 PI_TS_MAX_FAILURES_BEFORE_REBOOT="${PI_TS_MAX_FAILURES_BEFORE_REBOOT:-8}"
-PI_TS_EMAIL_ALERTS="${PI_TS_EMAIL_ALERTS:-false}"
-PI_TS_EMAIL_COMMAND="${PI_TS_EMAIL_COMMAND:-/root/utils/email.sh}"
+
+# Optional email hook.
+#
+# Empty string disables email.
+# If set, the command should accept:
+#   email.sh "Subject" "Message body"
+PI_TS_EMAIL_COMMAND="${PI_TS_EMAIL_COMMAND:-}"
 PI_TS_EMAIL_AFTER_FAILURES="${PI_TS_EMAIL_AFTER_FAILURES:-3}"
 PI_TS_EMAIL_COOLDOWN_SECONDS="${PI_TS_EMAIL_COOLDOWN_SECONDS:-3600}"
-ALERT_STAMP_FILE="/run/pi-tailscale-health.last-email-alert"
 
 send_email_alert_if_needed() {
     local count="$1"
     local reason="$2"
 
-    if [[ "$PI_TS_EMAIL_ALERTS" != "true" ]]; then
+    if [[ -z "$PI_TS_EMAIL_COMMAND" ]]; then
         return 0
     fi
 
@@ -37,7 +42,7 @@ send_email_alert_if_needed() {
     fi
 
     if [[ ! -x "$PI_TS_EMAIL_COMMAND" ]]; then
-        log "Email alerts enabled, but command is missing or not executable: $PI_TS_EMAIL_COMMAND"
+        log "Email command configured but missing or not executable: $PI_TS_EMAIL_COMMAND"
         return 0
     fi
 
@@ -76,9 +81,6 @@ $(systemctl is-active tailscaled 2>&1 || true)
 
 Tailscale IP:
 $(tailscale ip -4 2>&1 || true)
-
-Tailscale backend state:
-$(tailscale status --json 2>/dev/null | jq -r '.BackendState // "unknown"' 2>/dev/null || echo "unknown")
 
 Tailscale status:
 $(tailscale status 2>&1 || true)
@@ -148,13 +150,9 @@ if ! tailscale ip -4 >/dev/null 2>&1; then
     exit 0
 fi
 
-if command -v jq >/dev/null 2>&1; then
-    STATE="$(tailscale status --json 2>/dev/null | jq -r '.BackendState // "unknown"')"
-
-    if [[ "$STATE" != "Running" ]]; then
-        restart_tailscaled "tailscale backend state is $STATE"
-        exit 0
-    fi
+if ! tailscale status >/dev/null 2>&1; then
+    restart_tailscaled "tailscale status command failed"
+    exit 0
 fi
 
 log "Tailscale appears healthy"

@@ -50,31 +50,36 @@ install_tailscale_if_needed() {
         apt-get install -y curl
         curl -fsSL https://tailscale.com/install.sh | sh
     fi
-
-}
-
-tailscale_backend_state() {
-    if ! command -v tailscale >/dev/null 2>&1; then
-        echo "missing"
-        return 0
-    fi
-
-    if command -v jq >/dev/null 2>&1; then
-        tailscale status --json 2>/dev/null | jq -r '.BackendState // "unknown"' 2>/dev/null || echo "unknown"
-    else
-        if tailscale ip -4 >/dev/null 2>&1; then
-            echo "Running"
-        else
-            echo "unknown"
-        fi
-    fi
 }
 
 tailscale_is_authenticated() {
-    local state
-    state="$(tailscale_backend_state)"
+    command -v tailscale >/dev/null 2>&1 || return 1
+    tailscale ip -4 >/dev/null 2>&1
+}
 
-    [[ "$state" == "Running" ]]
+run_tailscale_up() {
+    local args=(
+        up
+        "--hostname=${PI_TS_HOSTNAME}"
+        "--accept-dns=${PI_TS_ACCEPT_DNS}"
+        "--accept-routes=${PI_TS_ACCEPT_ROUTES}"
+    )
+
+    if [[ -n "${1:-}" ]]; then
+        args+=("--auth-key=$1")
+    fi
+
+    if [[ -n "${PI_TS_EXTRA_UP_ARGS:-}" ]]; then
+        # Intentionally split simple extra args like:
+        #   PI_TS_EXTRA_UP_ARGS="--ssh"
+        #
+        # Do not put secrets in PI_TS_EXTRA_UP_ARGS.
+        # shellcheck disable=SC2206
+        local extra_args=( $PI_TS_EXTRA_UP_ARGS )
+        args+=("${extra_args[@]}")
+    fi
+
+    tailscale "${args[@]}"
 }
 
 authenticate_tailscale_if_needed() {
@@ -87,14 +92,7 @@ authenticate_tailscale_if_needed() {
 
     if [[ -n "${PI_TS_AUTH_KEY:-}" ]]; then
         echo "Tailscale not authenticated; using configured auth key"
-
-        tailscale up \
-            --auth-key="$PI_TS_AUTH_KEY" \
-            --hostname="$PI_TS_HOSTNAME" \
-            --accept-dns="$PI_TS_ACCEPT_DNS" \
-            --accept-routes="$PI_TS_ACCEPT_ROUTES" \
-            ${PI_TS_EXTRA_UP_ARGS}
-
+        run_tailscale_up "$PI_TS_AUTH_KEY"
         echo "Tailscale authenticated with configured auth key"
         return 0
     fi
@@ -125,14 +123,7 @@ authenticate_tailscale_if_needed() {
             fi
 
             echo "Authenticating with provided auth key"
-
-            tailscale up \
-                --auth-key="$entered_key" \
-                --hostname="$PI_TS_HOSTNAME" \
-                --accept-dns="$PI_TS_ACCEPT_DNS" \
-                --accept-routes="$PI_TS_ACCEPT_ROUTES" \
-                ${PI_TS_EXTRA_UP_ARGS}
-
+            run_tailscale_up "$entered_key"
             echo "Tailscale authenticated with provided auth key"
             return 0
             ;;
@@ -143,11 +134,7 @@ authenticate_tailscale_if_needed() {
             echo "Open the auth URL shown below, finish login/approval, then come back here."
             echo
 
-            tailscale up \
-                --hostname="$PI_TS_HOSTNAME" \
-                --accept-dns="$PI_TS_ACCEPT_DNS" \
-                --accept-routes="$PI_TS_ACCEPT_ROUTES" \
-                ${PI_TS_EXTRA_UP_ARGS} || true
+            run_tailscale_up "" || true
 
             echo
             read -r -p "Press Enter after Tailscale auth is complete..."
@@ -176,8 +163,9 @@ authenticate_tailscale_if_needed() {
 
 echo "Checking/Installing dependencies"
 apt-get update
-if ! command -v ethtool && command -v jq >/dev/null 2>&1; then
-    apt-get install -y ethtool jq
+
+if ! command -v ethtool >/dev/null 2>&1; then
+    apt-get install -y ethtool
 fi
 
 echo "Installing Tailscale if needed"
@@ -198,14 +186,6 @@ PI_TS_AUTH_KEY="${PI_TS_AUTH_KEY:-}"
 PI_TS_EXTRA_UP_ARGS="${PI_TS_EXTRA_UP_ARGS:-}"
 PI_TS_ACCEPT_DNS="${PI_TS_ACCEPT_DNS:-false}"
 PI_TS_ACCEPT_ROUTES="${PI_TS_ACCEPT_ROUTES:-false}"
-PI_TS_EMAIL_ALERTS="${PI_TS_EMAIL_ALERTS:-false}"
-
-if [[ "$PI_TS_EMAIL_ALERTS" == "true" ]]; then
-    if ! command -v swaks >/dev/null 2>&1; then
-        echo "Email alerts enabled and swaks not found; installing swaks"
-        apt-get install -y swaks
-    fi
-fi
 
 echo "Installing scripts"
 install -m 0755 "$SRC_DIR/bin/pi-tailscale-maintain.sh" /usr/local/sbin/pi-tailscale-maintain.sh

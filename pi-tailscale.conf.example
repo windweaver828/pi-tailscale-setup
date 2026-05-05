@@ -41,15 +41,22 @@ PI_TS_APPLY_PERFORMANCE="true"
 PI_TS_RESTART_ON_HEALTH_FAIL="true"
 
 # Usually leave this false. Reboots can hide real issues.
-PI_TS_REBOOT_ON_REPEATED_FAILURE="false"
+PI_TS_REBOOT_ON_REPEATED_FAILURE="true"
 PI_TS_MAX_FAILURES_BEFORE_REBOOT="8"
 
-# Optional email alerts.
-# This script should accept:
-#   email.sh "Subject" "Message body"
+# Optional email alert hook.
 #
-# If the script does not exist or is not executable, alerts are skipped.
-PI_TS_EMAIL_ALERTS="false"
-PI_TS_EMAIL_COMMAND="/root/utils/email.sh"
+# Empty disables email alerts.
+#
+# If set, the health script will call this command after repeated failures:
+#   PI_TS_EMAIL_COMMAND "Subject" "Message body"
+#
+# Example:
+#   PI_TS_EMAIL_COMMAND="/root/utils/email.sh"
+#
+# The email script is intentionally not installed by this role.
+PI_TS_EMAIL_COMMAND=""
+
+# Only used when PI_TS_EMAIL_COMMAND is set.
 PI_TS_EMAIL_AFTER_FAILURES="3"
 PI_TS_EMAIL_COOLDOWN_SECONDS="3600"

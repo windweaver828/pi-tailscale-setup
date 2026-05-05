@@ -22,6 +22,6 @@ git clone https://github.com/windweaver828/pi-tailscale-setup.git
 cd pi-tailscale-setup
 
 cp pi-tailscale.conf.example pi-tailscale.conf
-nano pi-tailscale.conf
+vi pi-tailscale.conf
 
-sudo ./install.sh
+sudo bash install.sh

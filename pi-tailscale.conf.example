@@ -60,3 +60,18 @@ PI_TS_EMAIL_COMMAND=""
 # Only used when PI_TS_EMAIL_COMMAND is set.
 PI_TS_EMAIL_AFTER_FAILURES="3"
 PI_TS_EMAIL_COOLDOWN_SECONDS="3600"
+
+# Optional re-auth hook.
+#
+# Empty disables automatic re-auth.
+#
+# If set, the health script will call this command after repeated failures:
+#   PI_TS_REAUTH_COMMAND
+#
+# Example:
+#   PI_TS_REAUTH_COMMAND="/root/utils/tailscale-nextcloud-reauth.sh"
+#
+# The reauth script is intentionally not installed by this role.
+PI_TS_REAUTH_COMMAND=""
+PI_TS_REAUTH_AFTER_FAILURES="5"
+PI_TS_REAUTH_COOLDOWN_SECONDS="900"

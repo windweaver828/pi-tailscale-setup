@@ -6,4 +6,4 @@ Requires=tailscaled.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/sbin/pi-tailscale-maintain.sh
+ExecStart=/root/pi-tailscale-role/bin/pi-tailscale-maintain.sh

@@ -5,4 +5,4 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/sbin/pi-tailscale-health.sh
+ExecStart=/root/pi-tailscale-role/bin/pi-tailscale-health.sh

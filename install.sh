@@ -199,7 +199,7 @@ chmod 700 "$ROLE_DIR"
 chmod 600 "$ENV_FILE"
 chmod 700 "$ROLE_DIR/bin" "$ROLE_DIR/systemd" "$ROLE_DIR/addons"
 chmod 700 "$ROLE_DIR/bin/"*.sh
-chmod 700 "$ROLE_DIR/addons/"*.sh 2>/dev/null || true
+chmod 700 "$ROLE_DIR/addons/auto-reauth/"*.sh 2>/dev/null || true
 chmod 700 "$ROLE_DIR/install.sh" "$ROLE_DIR/uninstall.sh"
 
 echo "Installing systemd units"

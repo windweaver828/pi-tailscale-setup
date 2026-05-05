@@ -11,6 +11,12 @@ It can:
 - apply Tailscale Linux performance tuning with `ethtool`
 - periodically re-apply desired Tailscale settings
 - restart `tailscaled` if it becomes unhealthy
+- optionally call an external email alert script after repeated failures
+- optionally call a Nextcloud-based reauth addon after repeated failures
+
+## Install
+
+This role expects to live at: /root/pi-tailscale-role
 
 ## Install
 
@@ -21,11 +27,10 @@ sudo apt install -y git
 git clone https://github.com/windweaver828/pi-tailscale-role.git
 cd pi-tailscale-role
 
-cp pi-tailscale.conf.example pi-tailscale.conf
-vi pi-tailscale.conf
+cp env.example .env
+vi .env
 
 sudo bash install.sh
-
 
 ## Use email addon
 sudo apt install -y swaks

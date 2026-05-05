@@ -1,0 +1,3 @@
+NC_USER='NEXTCLOUD_USERNAME'
+NC_WEBDAV_URL='https://nextcloud.example.com/remote.php/dav/files/$NC_USER/TailscaleRecovery/tailscale-authkey.txt'
+NC_APP_PASSWORD='app_password_here'

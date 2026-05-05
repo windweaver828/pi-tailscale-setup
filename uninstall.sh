@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROLE_DIR="/root/pi-tailscale-role"
+
 if [[ "$(id -u)" -ne 0 ]]; then
-    echo "Run as root: sudo ./uninstall.sh" >&2
-    exit 1
+  echo "Run as root: sudo ./uninstall.sh" >&2
+  exit 1
 fi
 
 echo "Stopping and disabling pi-tailscale-role timers"
@@ -16,17 +18,11 @@ rm -f /etc/systemd/system/pi-tailscale-maintain.timer
 rm -f /etc/systemd/system/pi-tailscale-health.service
 rm -f /etc/systemd/system/pi-tailscale-health.timer
 
-echo "Removing installed pi-tailscale-role scripts"
-rm -f /usr/local/sbin/pi-tailscale-maintain.sh
-rm -f /usr/local/sbin/pi-tailscale-health.sh
-
 echo "Removing forwarding sysctl config"
 rm -f /etc/sysctl.d/99-pi-tailscale-role.conf
 
 echo "Removing tailscaled restart override installed by this role"
 rm -f /etc/systemd/system/tailscaled.service.d/override.conf
-
-# Remove the override directory only if empty.
 rmdir /etc/systemd/system/tailscaled.service.d 2>/dev/null || true
 
 echo "Reloading systemd"
@@ -36,12 +32,12 @@ echo "Reloading sysctl settings"
 sysctl --system >/dev/null || true
 
 echo
-echo "Removed pi-tailscale-role files."
+echo "Removed installed pi-tailscale-role system integration."
 echo
 echo "Kept:"
 echo "  Tailscale itself"
-echo "  /etc/pi-tailscale-role/"
-echo "  any optional external email hook such as /root/utils/email.sh"
+echo "  $ROLE_DIR"
+echo "  optional external hooks like /root/utils/email.sh"
 echo
-echo "If one wants to remove the role config too, run:"
-echo "  sudo rm -rf /etc/pi-tailscale-role"
+echo "To remove the cloned role directory too, run:"
+echo "  sudo rm -rf $ROLE_DIR"

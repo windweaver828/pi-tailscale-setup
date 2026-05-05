@@ -27,6 +27,10 @@ PI_TS_ACCEPT_DNS="${PI_TS_ACCEPT_DNS:-false}"
 PI_TS_ACCEPT_ROUTES="${PI_TS_ACCEPT_ROUTES:-false}"
 PI_TS_EXTRA_UP_ARGS="${PI_TS_EXTRA_UP_ARGS:-}"
 
+PI_TS_ADVERTISE_EXIT_NODE="${PI_TS_ADVERTISE_EXIT_NODE:-false}"
+PI_TS_ADVERTISE_DYNAMIC_LAN="${PI_TS_ADVERTISE_DYNAMIC_LAN:-false}"
+PI_TS_STATIC_ROUTES="${PI_TS_STATIC_ROUTES:-}"
+
 if ! command -v curl >/dev/null 2>&1; then
   log "curl is not installed"
   exit 1
@@ -56,6 +60,40 @@ if [[ "$KEY" != tskey-auth-* ]]; then
   exit 1
 fi
 
+DEV="$(
+  ip -4 route show default 0.0.0.0/0 |
+    awk '$5 != "tailscale0" { print $5; exit }'
+)"
+
+if [[ -z "${DEV:-}" ]]; then
+  log "No non-Tailscale default IPv4 interface found"
+  exit 1
+fi
+
+DYNAMIC_LAN=""
+
+if [[ "$PI_TS_ADVERTISE_DYNAMIC_LAN" == "true" ]]; then
+  DYNAMIC_LAN="$(
+    ip -4 route show dev "$DEV" scope link proto kernel |
+      awk '{ print $1; exit }'
+  )"
+
+  if [[ -z "${DYNAMIC_LAN:-}" ]]; then
+    log "No connected LAN route found for $DEV"
+    exit 1
+  fi
+fi
+
+ADVERTISE_ROUTES=""
+
+if [[ -n "$PI_TS_STATIC_ROUTES" && "$PI_TS_ADVERTISE_DYNAMIC_LAN" == "true" ]]; then
+  ADVERTISE_ROUTES="${PI_TS_STATIC_ROUTES},${DYNAMIC_LAN}"
+elif [[ -n "$PI_TS_STATIC_ROUTES" ]]; then
+  ADVERTISE_ROUTES="$PI_TS_STATIC_ROUTES"
+elif [[ "$PI_TS_ADVERTISE_DYNAMIC_LAN" == "true" ]]; then
+  ADVERTISE_ROUTES="$DYNAMIC_LAN"
+fi
+
 log "Downloaded possible Tailscale auth key; attempting reauth"
 
 args=(
@@ -65,6 +103,16 @@ args=(
   "--accept-dns=${PI_TS_ACCEPT_DNS}"
   "--accept-routes=${PI_TS_ACCEPT_ROUTES}"
 )
+
+if [[ "$PI_TS_ADVERTISE_EXIT_NODE" == "true" ]]; then
+  args+=("--advertise-exit-node")
+fi
+
+if [[ -n "$ADVERTISE_ROUTES" ]]; then
+  args+=("--advertise-routes=${ADVERTISE_ROUTES}")
+else
+  args+=("--advertise-routes=")
+fi
 
 if [[ -n "$PI_TS_EXTRA_UP_ARGS" ]]; then
   # shellcheck disable=SC2206

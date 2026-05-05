@@ -25,3 +25,13 @@ cp pi-tailscale.conf.example pi-tailscale.conf
 vi pi-tailscale.conf
 
 sudo bash install.sh
+
+
+## Use email addon
+sudo apt install -y swaks
+sudo mkdir -p /root/utils
+sudo cp addons/email.sh.example /root/utils/email.sh
+sudo chmod 700 /root/utils/email.sh
+sudo cp addons/env-email.example /root/utils/.env-email
+sudo vi /root/utils/.env-email
+sudo chmod 600 /root/utils/.env-email

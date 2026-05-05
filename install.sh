@@ -47,10 +47,10 @@ install_tailscale_if_needed() {
         wget -qO- https://tailscale.com/install.sh | sh
     else
         echo "Neither curl nor wget is installed; installing curl first"
-        apt-get update
         apt-get install -y curl
         curl -fsSL https://tailscale.com/install.sh | sh
     fi
+
 }
 
 tailscale_backend_state() {
@@ -174,12 +174,14 @@ authenticate_tailscale_if_needed() {
     esac
 }
 
+echo "Checking/Installing dependencies"
+apt-get update
+if ! command -v ethtool && command -v jq >/dev/null 2>&1; then
+    apt-get install -y ethtool jq
+fi
+
 echo "Installing Tailscale if needed"
 install_tailscale_if_needed
-
-echo "Installing dependencies"
-apt-get update
-apt-get install -y ethtool jq
 
 echo "Installing config"
 install -d -m 0755 "$CONF_DIR"
@@ -196,6 +198,14 @@ PI_TS_AUTH_KEY="${PI_TS_AUTH_KEY:-}"
 PI_TS_EXTRA_UP_ARGS="${PI_TS_EXTRA_UP_ARGS:-}"
 PI_TS_ACCEPT_DNS="${PI_TS_ACCEPT_DNS:-false}"
 PI_TS_ACCEPT_ROUTES="${PI_TS_ACCEPT_ROUTES:-false}"
+PI_TS_EMAIL_ALERTS="${PI_TS_EMAIL_ALERTS:-false}"
+
+if [[ "$PI_TS_EMAIL_ALERTS" == "true" ]]; then
+    if ! command -v swaks >/dev/null 2>&1; then
+        echo "Email alerts enabled and swaks not found; installing swaks"
+        apt-get install -y swaks
+    fi
+fi
 
 echo "Installing scripts"
 install -m 0755 "$SRC_DIR/bin/pi-tailscale-maintain.sh" /usr/local/sbin/pi-tailscale-maintain.sh

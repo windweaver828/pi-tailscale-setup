@@ -43,3 +43,13 @@ PI_TS_RESTART_ON_HEALTH_FAIL="true"
 # Usually leave this false. Reboots can hide real issues.
 PI_TS_REBOOT_ON_REPEATED_FAILURE="false"
 PI_TS_MAX_FAILURES_BEFORE_REBOOT="8"
+
+# Optional email alerts.
+# This script should accept:
+#   email.sh "Subject" "Message body"
+#
+# If the script does not exist or is not executable, alerts are skipped.
+PI_TS_EMAIL_ALERTS="false"
+PI_TS_EMAIL_COMMAND="/root/utils/email.sh"
+PI_TS_EMAIL_AFTER_FAILURES="3"
+PI_TS_EMAIL_COOLDOWN_SECONDS="3600"

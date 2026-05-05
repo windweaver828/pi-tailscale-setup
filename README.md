@@ -1,4 +1,4 @@
-# pi-tailscale-setup
+# pi-tailscale-role
 
 Reusable Raspberry Pi / Debian role for keeping a Tailscale node configured and self-healing.
 
@@ -18,8 +18,8 @@ It can:
 sudo apt update
 sudo apt install -y git
 
-git clone https://github.com/windweaver828/pi-tailscale-setup.git
-cd pi-tailscale-setup
+git clone https://github.com/windweaver828/pi-tailscale-role.git
+cd pi-tailscale-role
 
 cp pi-tailscale.conf.example pi-tailscale.conf
 vi pi-tailscale.conf

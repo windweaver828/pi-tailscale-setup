@@ -1,0 +1,9 @@
+[Unit]
+Description=Maintain Tailscale options, subnet routes, exit node, and performance settings
+Wants=network-online.target
+After=network-online.target tailscaled.service
+Requires=tailscaled.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/pi-tailscale-maintain.sh

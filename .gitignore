@@ -1,0 +1,5 @@
+pi-tailscale.conf
+*.local
+.env
+.env.*
+*auth*key*

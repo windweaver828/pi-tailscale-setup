@@ -1,0 +1,45 @@
+# pi-tailscale-role config
+#
+# Copy this file before editing:
+#   cp pi-tailscale.conf.example pi-tailscale.conf
+#
+# Then edit pi-tailscale.conf and run:
+#   sudo ./install.sh
+
+# Hostname shown in Tailscale.
+PI_TS_HOSTNAME="tailsafe"
+
+# Optional Tailscale auth key for unattended setup.
+# Usually leave blank and paste the key at install prompt instead.
+PI_TS_AUTH_KEY=""
+
+# Optional extra args for first-time tailscale up.
+# Example:
+# PI_TS_EXTRA_UP_ARGS="--ssh"
+PI_TS_EXTRA_UP_ARGS=""
+
+# Advertise this Pi as an exit node.
+PI_TS_ADVERTISE_EXIT_NODE="true"
+
+# Dynamically advertise the LAN subnet of the current default interface.
+PI_TS_ADVERTISE_DYNAMIC_LAN="true"
+
+# Optional static routes instead of, or in addition to, dynamic LAN.
+# Leave empty unless needed.
+# Example:
+# PI_TS_STATIC_ROUTES="192.168.1.0/24,192.168.50.0/24"
+PI_TS_STATIC_ROUTES=""
+
+# Do not accept DNS or subnet routes from Tailscale on this Pi.
+PI_TS_ACCEPT_DNS="false"
+PI_TS_ACCEPT_ROUTES="false"
+
+# Apply Tailscale UDP GRO performance tuning to the active default interface.
+PI_TS_APPLY_PERFORMANCE="true"
+
+# Health-check behavior.
+PI_TS_RESTART_ON_HEALTH_FAIL="true"
+
+# Usually leave this false. Reboots can hide real issues.
+PI_TS_REBOOT_ON_REPEATED_FAILURE="false"
+PI_TS_MAX_FAILURES_BEFORE_REBOOT="8"

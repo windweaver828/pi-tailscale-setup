@@ -1,0 +1,11 @@
+[Unit]
+Description=Run lightweight Tailscale health check
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=3min
+AccuracySec=30s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

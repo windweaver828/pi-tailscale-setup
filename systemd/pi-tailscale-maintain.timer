@@ -1,0 +1,11 @@
+[Unit]
+Description=Periodically maintain Tailscale desired state
+
+[Timer]
+OnBootSec=45s
+OnUnitActiveSec=10min
+AccuracySec=1min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

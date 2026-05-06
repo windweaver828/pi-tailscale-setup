@@ -1,7 +1,0 @@
-SMTP_TO='toemail.example.com'
-SMTP_FROM='fromemail.example.com'
-SMTP_SERVER='smtp.example.com'
-SMTP_PORT='465'
-SMTP_AUTH_USER='user@example.com'
-SMTP_PASSWORD='passwordhere'
-SMTP_HELO='example.com'

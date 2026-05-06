@@ -59,18 +59,8 @@ install_tailscale_if_needed() {
     echo "Tailscale already installed"
     return 0
   fi
-
   echo "Tailscale not found; installing from official Tailscale repository"
-
-  if command -v curl >/dev/null 2>&1; then
-    curl -fsSL https://tailscale.com/install.sh | sh
-  elif command -v wget >/dev/null 2>&1; then
-    wget -qO- https://tailscale.com/install.sh | sh
-  else
-    echo "Neither curl nor wget is installed; installing curl first"
-    apt-get install -y curl
-    curl -fsSL https://tailscale.com/install.sh | sh
-  fi
+  curl -fsSL https://tailscale.com/install.sh | sh
 }
 
 tailscale_is_authenticated() {
@@ -80,7 +70,6 @@ tailscale_is_authenticated() {
 
 run_tailscale_up() {
   local auth_key="${1:-}"
-
   local args=(
     up
     "--hostname=${PI_TS_HOSTNAME}"
@@ -180,14 +169,10 @@ authenticate_tailscale_if_needed() {
 }
 
 echo "Checking/installing dependencies"
-apt-get update
 
-if ! command -v curl >/dev/null 2>&1; then
-  apt-get install -y curl
-fi
-
-if ! command -v ethtool >/dev/null 2>&1; then
-  apt-get install -y ethtool
+if ! command -v curl >/dev/null 2>&1 || ! command -v ethtool >/dev/null 2>&1; then
+  apt-get update
+  apt-get install -y curl ethtool
 fi
 
 echo "Installing Tailscale if needed"
@@ -199,7 +184,7 @@ chmod 700 "$ROLE_DIR"
 chmod 600 "$ENV_FILE"
 chmod 700 "$ROLE_DIR/bin" "$ROLE_DIR/systemd" "$ROLE_DIR/addons"
 chmod 700 "$ROLE_DIR/bin/"*.sh
-chmod 700 "$ROLE_DIR/addons/auto-reauth/"*.sh 2>/dev/null || true
+chmod 700 "$ROLE_DIR/addons/"*.sh 2>/dev/null || true
 chmod 700 "$ROLE_DIR/install.sh" "$ROLE_DIR/uninstall.sh"
 
 echo "Installing systemd units"

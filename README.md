@@ -11,7 +11,8 @@ It can:
 - apply Tailscale Linux performance tuning with `ethtool`
 - periodically re-apply desired Tailscale settings
 - restart `tailscaled` if it becomes unhealthy
-- optionally call an external email alert script after repeated failures
+- expects system mail to be setup to forward to real email for alerts 
+- for system mail forward setup see https://github.com/windweaver828/linux-utils.git email -> system-mail
 - optionally call a Nextcloud-based reauth addon after repeated failures
 
 ## Install
@@ -31,12 +32,3 @@ cp env.example .env
 vi .env
 
 sudo bash install.sh
-
-## Use email addon
-sudo apt install -y swaks
-sudo mkdir -p /root/utils
-sudo cp addons/email/email.sh.example /root/utils/email.sh
-sudo chmod 700 /root/utils/email.sh
-sudo cp addons/email/env-email.example /root/utils/.env-email
-sudo vi /root/utils/.env-email
-sudo chmod 600 /root/utils/.env-email
